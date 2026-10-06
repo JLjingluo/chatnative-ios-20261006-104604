@@ -2,7 +2,7 @@
 
 SwiftUI、iOS 17+，无第三方依赖。提供完整 Xcode 工程，以 ChatGPT iOS 常见交互为参考：黑白界面、右侧用户气泡、左侧助手内容、底部圆角输入栏、抽屉式历史记录、模型面板、分组设置和语音页面。应用名与图标为独立设计。
 
-**当前是可继续开发的原生实现，不是已验证的官方客户端 1:1 复刻。** 未提供目标版本截图，无法验收像素一致性；本工作区为 Linux，不能编译或运行 iOS App。源码通过 Swift 语法解析，API 核心已通过可移植测试，仍需 Xcode 构建和真机验收。
+**当前不是已验证的官方客户端 1:1 复刻。** 未提供目标版本截图，无法验收像素一致性。已在 GitHub Actions 的 macOS runner 上通过 Apple 平台核心测试和 iPhone Release 编译，并生成未签名 IPA；仍未进行真机、模拟器或视觉对齐验收。
 
 ## 在 iPhone 上运行
 
@@ -95,4 +95,4 @@ scripts/generate_project.py 工程配置生成器，新增文件后可重新执�
 
 ## 未签名 IPA 构建
 
-参见 [BUILD_IPA.md](BUILD_IPA.md)。已提供 macOS GitHub Actions 工作流和 `scripts/build_unsigned_ipa.sh`，不需要签名证书。工作流尚未远程执行，当前交付仍是源码，尚无已编译 IPA。
+参见 [BUILD_IPA.md](BUILD_IPA.md)。已提供 macOS GitHub Actions 工作流和 `scripts/build_unsigned_ipa.sh`，不需要签名证书。工作流已成功远程执行。[下载未签名 IPA 构建产物](https://github.com/JLjingluo/chatnative-ios-20261006-104604/actions/runs/37451975683/artifacts/11406444487)，解压后取得 IPA。

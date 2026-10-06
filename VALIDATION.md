@@ -9,7 +9,7 @@
 | 全部 App Swift 文件的 `swiftc -frontend -parse` | 通过语法解析 |
 | Xcode 工程结构 | 58 个对象引用正确，源码均已列入工程 |
 | 共享 scheme / Info.plist / 隐私清单 / 资源 | XML、plist、JSON 与图标路径检查通过 |
-| iOS SDK 编译、SwiftUI 类型检查 | 未执行：此环境无 Xcode 或 Apple SDK |
+| iOS SDK 编译、SwiftUI 类型检查 | GitHub Actions macOS runner 上 iPhone Release 构建通过 |
 | iOS 模拟器 / 真机 / 截图对比 | 未执行 |
 | 真实 API 请求、Keychain 和麦克风授权 | 未执行：无用户提供的服务配置或 iOS 设备 |
 
@@ -28,4 +28,15 @@ iOS 构建和真机验收命令在 README 中。协议测试不能证明所有�
 
 ## 未签名 IPA 构建流程补充
 
-新增 macOS GitHub Actions 工作流与打包脚本。工作流 YAML 结构检查、Bash 语法检查通过；Linux 环境执行脚本时按预期拒绝构建。工作流尚未在远程仓库运行，没有已编译 IPA。
+新增 macOS GitHub Actions 工作流与打包脚本。工作流 YAML 结构检查、Bash 语法检查通过；Linux 环境执行脚本时按预期拒绝构建。工作流已在远程仓库运行成功，产出未签名 IPA。下载入口：https://github.com/JLjingluo/chatnative-ios-20261006-104604/actions/runs/37451975683/artifacts/11406444487。
+
+## 远程 iOS 构建实测
+
+- 构建记录：https://github.com/JLjingluo/chatnative-ios-20261006-104604/actions/runs/37451975683
+- 编译源码提交：`b6455d2cc73665f8018f00a3b5ee3b00f9d401a6`
+- macOS Apple 平台核心测试：通过。
+- iPhone Release 编译与打包：通过。
+- 脚本已检查 arm64 可执行文件、无应用代码签名、IPA ZIP 完整性。
+- GitHub artifact 已保存 IPA 和 SHA-256 校验文件。
+- 当前环境代理拒绝 GitHub 产物存储地址，所以未在本地重新下载和独立解析 Mach-O。
+- 未进行真机运行、真实上游 API 调用或截图对齐验收。

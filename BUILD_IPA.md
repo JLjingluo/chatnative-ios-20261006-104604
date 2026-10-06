@@ -1,6 +1,6 @@
 # 生成未签名 IPA
 
-工程已经提供 GitHub Actions 的 macOS 构建流程和本地 Mac 构建脚本。**目前没有产出的 IPA：当前 Linux 环境不能运行 Xcode，工作流也尚未在 GitHub 仓库执行。**
+工程已经提供 GitHub Actions 的 macOS 构建流程和本地 Mac 构建脚本。**已于 2026-10-06 在 GitHub Actions macOS runner 上成功构建。** [下载 IPA 产物](https://github.com/JLjingluo/chatnative-ios-20261006-104604/actions/runs/37451975683/artifacts/11406444487)，解压得到 `ChatNative-unsigned.ipa`。此环境无法从 GitHub 产物存储地址下载文件，但 GitHub 已保存完整构建结果。
 
 ## GitHub Actions
 
@@ -8,7 +8,7 @@
 2. 主分支为 `main` 或 `master` 时，提交应用代码或工作流会自动触发构建。也可在仓库 **Actions → Build unsigned iOS IPA → Run workflow** 手动运行。
 3. 流程在 `macos-15` runner 上运行核心测试，再使用 `xcodebuild` 编译 `iphoneos` 的 Release App。明确禁用代码签名，无需证书或 Apple 开发者账号。
 4. 构建成功后，在运行页的 **Artifacts** 下载 `ChatNative-unsigned-IPA`。GitHub 下载的是 artifact ZIP，解压后取得真正的 `ChatNative-unsigned.ipa` 和 SHA-256 文件。
-5. 若构建失败，在日志或 `iOS-build-log` 下载产物中查看错误。首次 Apple SDK 构建尚未验证，可能仍需要修复编译问题；失败时不会上传一个假 IPA。
+5. 若构建失败，在日志或 `iOS-build-log` 下载产物中查看错误。Apple SDK 的首次构建已通过；未来若编译失败，不会上传一个假 IPA。
 
 仓库 Actions 必须启用，账号须有 macOS runner 的可用额度。私有仓库的运行时间是否收费取决于 GitHub 账号套餐和额度。
 
