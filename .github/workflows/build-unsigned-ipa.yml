@@ -1,0 +1,51 @@
+name: Build unsigned iOS IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+    paths:
+      - 'ChatNative/**'
+      - 'ChatNativeTests/**'
+      - 'ChatNative.xcodeproj/**'
+      - 'Package.swift'
+      - 'scripts/build_unsigned_ipa.sh'
+      - '.github/workflows/build-unsigned-ipa.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: unsigned-ipa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 25
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Show Xcode version
+        run: xcodebuild -version
+      - name: Test API core on Apple platform
+        run: swift test
+      - name: Build and package unsigned iPhone app
+        run: bash scripts/build_unsigned_ipa.sh
+      - name: Upload unsigned IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: ChatNative-unsigned-IPA
+          path: |
+            artifacts/ChatNative-unsigned.ipa
+            artifacts/ChatNative-unsigned.ipa.sha256
+          if-no-files-found: error
+          retention-days: 7
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: iOS-build-log
+          path: artifacts/xcodebuild.log
+          if-no-files-found: ignore
+          retention-days: 7
