@@ -15,7 +15,12 @@ output = root / 'artifacts/previews'
 output.mkdir(parents=True, exist_ok=True)
 
 def run(args, check=True):
-    return subprocess.run(args, check=check, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    result = subprocess.run(args, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    if check and result.returncode != 0:
+        print(result.stdout[-12000:], flush=True)
+        print('::error::Simulator command failed: ' + ' '.join(args[:5]), flush=True)
+        result.check_returncode()
+    return result
 
 devices = json.loads(run(['xcrun', 'simctl', 'list', 'devices', 'available', '--json']).stdout)['devices']
 choices = []
@@ -40,7 +45,13 @@ run(['xcrun', 'simctl', 'status_bar', udid, 'override', '--time', '9:41', '--bat
 args = ['xcodebuild', '-project', 'ChatNative.xcodeproj', '-scheme', 'ChatNative', '-configuration', 'Debug', '-sdk', 'iphonesimulator', '-destination', 'id=' + udid, '-derivedDataPath', str(root / '.ci-simulator'), '-clonedSourcePackagesDirPath', str(root / '.ci-packages'), 'CODE_SIGNING_ALLOWED=NO', 'build']
 with (root / 'artifacts/simulator-build.log').open('w') as log:
     result = subprocess.run(args, stdout=log, stderr=subprocess.STDOUT)
-assert result.returncode == 0, 'Simulator build failed; see artifacts/simulator-build.log.'
+if result.returncode != 0:
+    text = (root / 'artifacts/simulator-build.log').read_text(errors='replace')
+    for line in text.splitlines():
+        if 'error:' in line:
+            print('::error::' + line.replace('%', '%25'), flush=True)
+    print(text[-12000:], flush=True)
+    raise RuntimeError('Simulator build failed; see artifacts/simulator-build.log.')
 app = root / '.ci-simulator/Build/Products/Debug-iphonesimulator/ChatNative.app'
 run(['codesign', '--force', '--deep', '--sign', '-', str(app)])
 run(['xcrun', 'simctl', 'install', udid, str(app)])
@@ -49,6 +60,7 @@ for mode in ['home', 'chat', 'code', 'sidebar', 'models', 'settings', 'voice', '
     run(['xcrun', 'simctl', 'ui', udid, 'appearance', 'dark' if mode == 'dark' else 'light'])
     run(['xcrun', 'simctl', 'launch', udid, 'app.chatnative.ios', '--ui-preview', mode])
     time.sleep(4)
+    assert 'app.chatnative.ios' in run(['xcrun', 'simctl', 'spawn', udid, 'launchctl', 'list']).stdout, 'App crashed after launch: ' + mode
     filename = output / f'{prefix}-{mode}.png'
     run(['xcrun', 'simctl', 'io', udid, 'screenshot', str(filename)])
     assert filename.stat().st_size > 10000, f'Missing screenshot: {mode}'
