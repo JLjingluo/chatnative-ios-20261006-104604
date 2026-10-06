@@ -50,7 +50,7 @@ def config_list(prefix, settings):
     configurations = []
     for mode in ['Debug', 'Release']:
         merged = dict(settings)
-        merged.update({'SWIFT_OPTIMIZATION_LEVEL': '-Onone' if mode == 'Debug' else '-O', 'DEBUG_INFORMATION_FORMAT': 'dwarf' if mode == 'Debug' else 'dwarf-with-dsym'})
+        merged.update({'SWIFT_OPTIMIZATION_LEVEL': '-Onone' if mode == 'Debug' else '-O', 'DEBUG_INFORMATION_FORMAT': 'dwarf' if mode == 'Debug' else 'dwarf-with-dsym', 'ONLY_ACTIVE_ARCH': 'YES' if mode == 'Debug' else 'NO'})
         if mode == 'Debug': merged.update({'ENABLE_TESTABILITY': 'YES', 'SWIFT_ACTIVE_COMPILATION_CONDITIONS': 'DEBUG'})
         entries = ' '.join(f'{key} = {quote(value)};' for key, value in merged.items())
         configurations.append(obj(prefix + mode, 'XCBuildConfiguration', f'buildSettings = {{ {entries} }}; name = {mode};'))

@@ -42,7 +42,8 @@ print(run(['xcrun', 'simctl', 'bootstatus', udid, '-b']).stdout, flush=True)
 run(['defaults', 'write', 'com.apple.iphonesimulator', 'ConnectHardwareKeyboard', '-bool', 'NO'], check=False)
 run(['xcrun', 'simctl', 'status_bar', udid, 'override', '--time', '9:41', '--batteryState', 'charged', '--batteryLevel', '100', '--wifiMode', 'active', '--wifiBars', '3', '--cellularMode', 'active', '--cellularBars', '4'], check=False)
 
-args = ['xcodebuild', '-project', 'ChatNative.xcodeproj', '-scheme', 'ChatNative', '-configuration', 'Debug', '-sdk', 'iphonesimulator', '-destination', 'id=' + udid, '-derivedDataPath', str(root / '.ci-simulator'), '-clonedSourcePackagesDirPath', str(root / '.ci-packages'), 'CODE_SIGNING_ALLOWED=NO', 'build']
+arch = 'arm64' if run(['sysctl', '-n', 'hw.optional.arm64'], check=False).stdout.strip() == '1' else 'x86_64'
+args = ['xcodebuild', '-project', 'ChatNative.xcodeproj', '-scheme', 'ChatNative', '-configuration', 'Debug', '-sdk', 'iphonesimulator', '-destination', 'id=' + udid, '-derivedDataPath', str(root / '.ci-simulator'), '-clonedSourcePackagesDirPath', str(root / '.ci-packages'), 'CODE_SIGNING_ALLOWED=NO', 'ONLY_ACTIVE_ARCH=YES', 'ARCHS=' + arch, 'build']
 with (root / 'artifacts/simulator-build.log').open('w') as log:
     result = subprocess.run(args, stdout=log, stderr=subprocess.STDOUT)
 if result.returncode != 0:
