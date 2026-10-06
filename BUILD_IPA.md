@@ -1,6 +1,8 @@
 # 生成未签名 IPA
 
-工程已经提供 GitHub Actions 的 macOS 构建流程和本地 Mac 构建脚本。**已于 2026-10-06 在 GitHub Actions macOS runner 上成功构建。** [下载 IPA 产物](https://github.com/JLjingluo/chatnative-ios-20261006-104604/actions/runs/37451975683/artifacts/11406444487)，解压得到 `ChatNative-unsigned.ipa`。此环境无法从 GitHub 产物存储地址下载文件，但 GitHub 已保存完整构建结果。
+[直接下载 ChatNative-unsigned.ipa](https://github.com/JLjingluo/chatnative-ios-20261006-104604/releases/download/unsigned-2/ChatNative-unsigned.ipa)。无需登录，无需解压。文件已匿名下载并完成独立校验。
+
+工程已经提供 GitHub Actions 的 macOS 构建流程和本地 Mac 构建脚本。**已于 2026-10-06 在 GitHub Actions macOS runner 上成功构建。** [下载 IPA 产物](https://github.com/JLjingluo/chatnative-ios-20261006-104604/actions/runs/37451975683/artifacts/11406444487)，解压得到 `ChatNative-unsigned.ipa`。现在也已发布单独的 Release IPA 文件，可使用文档顶部的直链。
 
 ## GitHub Actions
 
@@ -10,9 +12,9 @@
 4. 构建成功后，在运行页的 **Artifacts** 下载 `ChatNative-unsigned-IPA`。GitHub 下载的是 artifact ZIP，解压后取得真正的 `ChatNative-unsigned.ipa` 和 SHA-256 文件。
 5. 若构建失败，在日志或 `iOS-build-log` 下载产物中查看错误。Apple SDK 的首次构建已通过；未来若编译失败，不会上传一个假 IPA。
 
-仓库 Actions 必须启用，账号须有 macOS runner 的可用额度。私有仓库的运行时间是否收费取决于 GitHub 账号套餐和额度。
+仓库 Actions 必须启用。此仓库已公开，使用标准 GitHub-hosted macOS runner；公开仓库的标准 runner 通常无需支付分钟费用。
 
-工作流只有仓库读取权限，不上传密钥，不提交修改，不发布 Release。你无需把 GitHub token 放入源码、仓库变量或此工作流。已经在聊天中公开的令牌应撤销；如需远程代操作，请使用仓库链接与正式的 GitHub 授权连接。
+工作流使用 GitHub 自动生成的运行令牌与 `contents: write` 权限，在当前仓库发布 Release 和单独的 IPA 文件；不把个人访问令牌写入源码。你无需把 GitHub token 放入源码、仓库变量或此工作流。已经在聊天中公开的令牌应撤销；如需远程代操作，请使用仓库链接与正式的 GitHub 授权连接。
 
 ## 在 Mac 上
 

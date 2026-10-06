@@ -40,3 +40,14 @@ iOS 构建和真机验收命令在 README 中。协议测试不能证明所有�
 - GitHub artifact 已保存 IPA 和 SHA-256 校验文件。
 - 当前环境代理拒绝 GitHub 产物存储地址，所以未在本地重新下载和独立解析 Mach-O。
 - 未进行真机运行、真实上游 API 调用或截图对齐验收。
+
+## 公开直链与独立 IPA 校验
+
+- 仓库已按用户要求公开。
+- 本次成功构建：https://github.com/JLjingluo/chatnative-ios-20261006-104604/actions/runs/37454655399
+- IPA 直链：https://github.com/JLjingluo/chatnative-ios-20261006-104604/releases/download/unsigned-2/ChatNative-unsigned.ipa
+- 不携带认证令牌的下载返回 HTTP 200，Content-Type 为 application/octet-stream，文件名为 ChatNative-unsigned.ipa。
+- 文件大小：619739 字节。
+- SHA-256：`a7370134457a14a43016f57b37775c22caa3f14848b1273125055a15379c991c`，与 runner 发布的校验报告一致。
+- 本地 ZIP 完整性验证通过，Mach-O 为 iOS 设备平台、arm64 架构；没有 LC_CODE_SIGNATURE、_CodeSignature 或 embedded.mobileprovision。
+- 这些检查不等同于真机运行或安装验证。

@@ -1,5 +1,9 @@
 # ChatNative · 原生 iOS OpenAI 兼容客户端
 
+## IPA 直链下载
+
+[直接下载 ChatNative-unsigned.ipa](https://github.com/JLjingluo/chatnative-ios-20261006-104604/releases/download/unsigned-2/ChatNative-unsigned.ipa)。无需 GitHub 登录，无需解压。源码仓库已按要求公开；发布文件已匿名下载并通过 SHA-256、ZIP 完整性、iOS arm64 和无代码签名检查。
+
 SwiftUI、iOS 17+，无第三方依赖。提供完整 Xcode 工程，以 ChatGPT iOS 常见交互为参考：黑白界面、右侧用户气泡、左侧助手内容、底部圆角输入栏、抽屉式历史记录、模型面板、分组设置和语音页面。应用名与图标为独立设计。
 
 **当前不是已验证的官方客户端 1:1 复刻。** 未提供目标版本截图，无法验收像素一致性。已在 GitHub Actions 的 macOS runner 上通过 Apple 平台核心测试和 iPhone Release 编译，并生成未签名 IPA；仍未进行真机、模拟器或视觉对齐验收。
