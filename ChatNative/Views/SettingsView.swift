@@ -12,10 +12,10 @@ struct SettingsView: View {
             List {
                 Section {
                     HStack(spacing: 14) {
-                        BrandMark(size: 36).frame(width: 50, height: 50)
+                        Text("你").font(.system(size: 19, weight: .semibold)).frame(width: 50, height: 50).nativeGlass(radius: 25)
                         VStack(alignment: .leading, spacing: 5) {
-                            Text("ChatNative").font(.title3.weight(.semibold))
-                            Text("你的模型，你的对话").font(.footnote).foregroundStyle(.secondary)
+                            Text("个人设置").font(.title3.weight(.semibold))
+                            Text("你的模型与对话偏好").font(.footnote).foregroundStyle(.secondary)
                         }
                     }.padding(.vertical, 8)
                 }
@@ -27,12 +27,12 @@ struct SettingsView: View {
                     Picker(selection: $store.settings.appearance) {
                         Text("跟随系统").tag("system"); Text("浅色").tag("light"); Text("深色").tag("dark")
                     } label: { Label("外观", systemImage: "circle.lefthalf.filled") }
-                    Toggle(isOn: $store.settings.haptics) { Label("触感反馈", systemImage: "hand.tap") }.tint(.primary)
+                    Toggle(isOn: $store.settings.haptics) { Label("触感反馈", systemImage: "hand.tap") } .tint(.primary)
                     NavigationLink { ConversationSettingsView() } label: { Label("对话与上下文", systemImage: "text.bubble") }
                     Picker(selection: $store.settings.speechLanguage) {
                         Text("中文").tag("zh-CN"); Text("English").tag("en-US"); Text("日本語").tag("ja-JP")
                     } label: { Label("语音语言", systemImage: "waveform") }
-                    Toggle(isOn: $store.settings.autoRead) { Label("语音模式自动朗读", systemImage: "speaker.wave.2") }.tint(.primary)
+                    Toggle(isOn: $store.settings.autoRead) { Label("语音模式自动朗读", systemImage: "speaker.wave.2") } .tint(.primary)
                 }
                 Section {
                     Button {
@@ -41,11 +41,17 @@ struct SettingsView: View {
                     Button(role: .destructive) { clearAlert = true } label: { Label("清除全部对话", systemImage: "trash") }
                 } header: { Text("数据") } footer: { Text("聊天和图片保存在本机，令牌保存在 Keychain。发送消息时，上下文与图片会传给你配置的 API 服务；导出文件也包含图片，请妥善保管。") }
                 Section {
-                    LabeledContent("版本", value: "1.0.0")
-                    Text("独立开发的 OpenAI 兼容客户端，与 OpenAI 官方 ChatGPT App 无隶属关系。").font(.footnote).foregroundStyle(.secondary)
+                    NavigationLink("开源许可") {
+                        ScrollView {
+                            Text((Bundle.main.url(forResource: "ThirdPartyNotices", withExtension: "txt").flatMap { try? String(contentsOf: $0, encoding: .utf8) }) ?? "MIT License · Alfian Losari")
+                                .font(.caption.monospaced()).textSelection(.enabled).padding(20)
+                        }.navigationTitle("开源许可").navigationBarTitleDisplayMode(.inline)
+                    }
+                    LabeledContent("版本", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.1.0")
+                    Text("基于 ChatGPTUI / ChatGPTSwiftUI 参考构建的独立客户端，与 OpenAI 官方 App 无隶属关系。").font(.footnote).foregroundStyle(.secondary)
                 } header: { Text("关于") }
             }.navigationTitle("设置").navigationBarTitleDisplayMode(.inline)
-                .toolbar { ToolbarItem(placement: .confirmationAction) { Button("完成") { if store.saveSettings() { dismiss() } else { localError = store.errorMessage } }.tint(.primary).fontWeight(.semibold) } }
+                .toolbar { ToolbarItem(placement: .confirmationAction) { Button("完成") { if store.saveSettings() { dismiss() } else { localError = store.errorMessage } } .tint(.primary).fontWeight(.semibold) } }
                 .alert("清除全部对话？", isPresented: $clearAlert) {
                     Button("取消", role: .cancel) {}
                     Button("清除", role: .destructive) { store.clearHistory() }
@@ -54,7 +60,7 @@ struct SettingsView: View {
                 .sheet(isPresented: Binding(get: { exportedURL != nil }, set: { if !$0 { if let url = exportedURL { try? FileManager.default.removeItem(at: url) }; exportedURL = nil } })) {
                     if let url = exportedURL { ShareSheet(items: [url]) }
                 }
-        }.onDisappear { store.saveSettings() }
+        }.presentationCornerRadius(32).onDisappear { store.saveSettings() }
     }
 }
 
@@ -95,7 +101,7 @@ struct APISettingsView: View {
                     }
                 } label: {
                     HStack { Text("测试连接并获取模型"); Spacer(); if loading { ProgressView() } else { Image(systemName: "arrow.clockwise") } }
-                }.disabled(loading).tint(.primary)
+                }.disabled(loading) .tint(.primary)
                 if let status { Text(status).font(.footnote).foregroundStyle(.secondary).textSelection(.enabled) }
             } header: { Text("OpenAI 兼容接口") } footer: { Text("填写服务商提供的 API 根地址，通常以 /v1 结尾。支持 LiteLLM、New API 等网关。部分接口不开放 /models，仍可手动添加模型。公网地址须使用 HTTPS。") }
             Section {
@@ -112,7 +118,7 @@ struct APISettingsView: View {
                         }
                     }.swipeActions { Button("删除", role: .destructive) { remove(model) }.disabled(store.settings.models.count < 2 || store.isStreaming) }
                 }
-                Button { addingModel = true } label: { Label("手动添加模型", systemImage: "plus") }.tint(.primary).disabled(store.isStreaming)
+                Button { addingModel = true } label: { Label("手动添加模型", systemImage: "plus") } .tint(.primary).disabled(store.isStreaming)
             } header: { Text("可用模型") } footer: { Text("模型 ID 必须与上游一致。图片能力需要手动确认，开启选项不会让文字模型获得图片能力。") }
             if !fetched.isEmpty {
                 Section("服务端模型 · 点击添加") {
@@ -123,7 +129,7 @@ struct APISettingsView: View {
                             store.saveSettings()
                         } label: {
                             HStack { Text(id).font(.system(size: 13, design: .monospaced)); Spacer(); Image(systemName: store.settings.models.contains(where: { $0.id == id }) ? "checkmark" : "plus") }
-                        }.tint(.primary).disabled(store.settings.models.contains(where: { $0.id == id }) || store.isStreaming)
+                        } .tint(.primary).disabled(store.settings.models.contains(where: { $0.id == id }) || store.isStreaming)
                     }
                 }
             }
@@ -155,14 +161,14 @@ struct ModelEditorView: View {
                     TextField("模型 ID，例如 gpt-4o-mini", text: $id).textInputAutocapitalization(.never).autocorrectionDisabled().disabled(original != nil)
                     TextField("显示名称", text: $name)
                     TextField("简短说明", text: $detail)
-                    Toggle("支持图片输入", isOn: $images).tint(.primary)
+                    Toggle("支持图片输入", isOn: $images) .tint(.primary)
                 }
                 if let validation { Text(validation).font(.footnote).foregroundStyle(.red) }
                 Section { Text("请核对服务商文档。这里只声明能力，实际支持情况由服务端决定。").font(.footnote).foregroundStyle(.secondary) }
             }.navigationTitle(original == nil ? "添加模型" : "编辑模型").navigationBarTitleDisplayMode(.inline)
                 .toolbar {
-                    ToolbarItem(placement: .cancellationAction) { Button("取消") { dismiss() }.tint(.primary) }
-                    ToolbarItem(placement: .confirmationAction) { Button("保存") { save() }.fontWeight(.semibold).tint(.primary).disabled(store.isStreaming) }
+                    ToolbarItem(placement: .cancellationAction) { Button("取消") { dismiss() } .tint(.primary) }
+                    ToolbarItem(placement: .confirmationAction) { Button("保存") { save() }.fontWeight(.semibold) .tint(.primary).disabled(store.isStreaming) }
                 }
         }.onAppear { if let original { id = original.id; name = original.name; detail = original.detail; images = original.supportsImages } }
     }
@@ -188,10 +194,10 @@ struct ConversationSettingsView: View {
                 Stepper("最近 \(store.settings.contextLimit) 条消息", value: $store.settings.contextLimit, in: 2...100, step: 2)
             } header: { Text("上下文") } footer: { Text("每次请求发送最近的消息，从用户消息开始。未完成的助手回复不会进入上下文；历史记录仍全部保留。更长上下文会增加用量，这不是按 token 精确截断。") }
             Section {
-                Toggle("发送 temperature 参数", isOn: $store.settings.temperatureEnabled).tint(.primary)
+                Toggle("发送 temperature 参数", isOn: $store.settings.temperatureEnabled) .tint(.primary)
                 if store.settings.temperatureEnabled {
                     HStack { Text("随机性"); Spacer(); Text(store.settings.temperature, format: .number.precision(.fractionLength(1))).foregroundStyle(.secondary) }
-                    Slider(value: $store.settings.temperature, in: 0...2, step: 0.1).tint(.primary)
+                    Slider(value: $store.settings.temperature, in: 0...2, step: 0.1) .tint(.primary)
                 }
             } footer: { Text("默认不发送此参数，以兼容限制采样参数的模型。") }
         }.navigationTitle("对话与上下文").navigationBarTitleDisplayMode(.inline).onDisappear { store.saveSettings() }

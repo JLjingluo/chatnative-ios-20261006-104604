@@ -6,6 +6,8 @@ enum Palette {
     static let secondary = Color(uiColor: .secondarySystemBackground)
     static let tertiary = Color(uiColor: .tertiarySystemFill)
     static let ink = Color.primary
+    static let bubble = Color(uiColor: .secondarySystemBackground)
+    static let code = Color(red: 0.095, green: 0.095, blue: 0.10)
 }
 
 struct IconButton: View {
@@ -45,7 +47,7 @@ struct SheetHeader: View {
             Spacer()
             Button(action: dismiss) {
                 Image(systemName: "xmark").font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.secondary).frame(width: 30, height: 30).background(Palette.secondary, in: Circle())
+                    .foregroundStyle(.secondary).frame(width: 36, height: 36).nativeGlass(radius: 18, interactive: true)
             }.accessibilityLabel("关闭")
         }.padding(.horizontal, 24).padding(.vertical, 20)
     }

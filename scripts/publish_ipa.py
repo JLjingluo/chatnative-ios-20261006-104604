@@ -9,6 +9,10 @@ import struct
 import urllib.parse
 import urllib.request
 import zipfile
+import sys
+import time
+import re
+import urllib.error
 
 root = Path(__file__).resolve().parents[1]
 ipa = root / 'artifacts/ChatNative-unsigned.ipa'
@@ -31,6 +35,10 @@ with zipfile.ZipFile(ipa) as archive:
     assert 0x1d not in commands, 'An executable code signature was found'
     assert not any('/_CodeSignature/' in name or name.endswith('embedded.mobileprovision') for name in archive.namelist()), 'Unexpected app signature or provisioning profile'
 
+sdk_major = int(re.search(r'(\d+)', info['DTSDKName']).group(1))
+required_sdk = int(os.environ.get('REQUIRED_SDK_MAJOR', '26'))
+assert sdk_major == required_sdk, f'Expected iOS {required_sdk} SDK, got {info["DTSDKName"]}'
+preview_only = '--preview-only' in sys.argv
 repository = os.environ['GITHUB_REPOSITORY']
 credential = os.environ['GH_RELEASE_TOKEN']
 tag = 'unsigned-' + os.environ['GITHUB_RUN_NUMBER']
@@ -45,27 +53,45 @@ verification = {
     'bundle_identifier': info['CFBundleIdentifier'],
     'minimum_ios': info.get('MinimumOSVersion'),
     'version': info['CFBundleShortVersionString'],
+    'sdk': info['DTSDKName'],
+    'xcode_build': info.get('DTXcodeBuild'),
+    'ui_reference': ['alfianlosari/ChatGPTUI', 'alfianlosari/ChatGPTSwiftUI'],
+    'screenshots': sorted(path.name for path in (root / 'artifacts/previews').glob('*.png')),
     'source_commit': os.environ['GITHUB_SHA'],
     'build_url': run_url
 }
-report = root / 'artifacts/IPA-VERIFICATION.json'
+report = root / ('artifacts/IPA-VERIFICATION-ios27.json' if preview_only else 'artifacts/IPA-VERIFICATION.json')
 report.write_text(json.dumps(verification, ensure_ascii=False, indent=2))
 print(json.dumps(verification, ensure_ascii=False))
 headers = {'Authorization': 'Bearer ' + credential, 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'ChatNative-IPA-Release'}
 body = {
     'tag_name': tag,
     'target_commitish': os.environ['GITHUB_SHA'],
-    'name': 'ChatNative 1.0.0 · unsigned iOS IPA',
-    'body': 'Direct download: **ChatNative-unsigned.ipa**.\n\nNative iOS 17+ arm64 app. Unsigned; ordinary iOS installation requires signing. Configure your own OpenAI-compatible API inside the app. Not an official ChatGPT client.\n\nApple-platform core tests, iPhone Release build and IPA structure checks passed. No device or screenshot verification.\n\nBuild: ' + run_url,
+    'name': 'ChatNative ' + info['CFBundleShortVersionString'] + ' · Liquid Glass · unsigned iOS IPA',
+    'body': 'Direct download: **ChatNative-unsigned.ipa**.\n\nNative iOS 17+ arm64 app. Unsigned; ordinary iOS installation requires signing. Configure your own OpenAI-compatible API inside the app. Not an official ChatGPT client.\n\nApple-platform core tests, iPhone Release build, IPA structure checks and real iOS simulator captures passed. Native iOS 26 Liquid Glass is used for controls. ChatGPTUI Markdown rendering is integrated. No claim of pixel-perfect official UI or physical-device testing.\n\nBuild: ' + run_url,
     'draft': False,
     'prerelease': False
 }
-request = urllib.request.Request('https://api.github.com/repos/' + repository + '/releases', data=json.dumps(body).encode(), headers={**headers, 'Content-Type': 'application/json'}, method='POST')
-with urllib.request.urlopen(request, timeout=60) as response:
-    release = json.load(response)
+if preview_only:
+    release = None
+    for _ in range(120):
+        try:
+            request = urllib.request.Request('https://api.github.com/repos/' + repository + '/releases/tags/' + tag, headers=headers)
+            with urllib.request.urlopen(request, timeout=30) as response:
+                release = json.load(response)
+            break
+        except urllib.error.HTTPError as error:
+            if error.code != 404: raise
+            time.sleep(5)
+    assert release, 'iOS 26 release was not published; cannot attach iOS 27 previews.'
+else:
+    request = urllib.request.Request('https://api.github.com/repos/' + repository + '/releases', data=json.dumps(body).encode(), headers={**headers, 'Content-Type': 'application/json'}, method='POST')
+    with urllib.request.urlopen(request, timeout=60) as response:
+        release = json.load(response)
 upload_root = release['upload_url'].split('{')[0]
 assert urllib.parse.urlsplit(upload_root).hostname == 'uploads.github.com'
-for file in [ipa, ipa.with_suffix('.ipa.sha256'), report]:
+files = ([report] if preview_only else [ipa, ipa.with_suffix('.ipa.sha256'), report]) + sorted((root / 'artifacts/previews').glob('*.png'))
+for file in files:
     request = urllib.request.Request(upload_root + '?name=' + urllib.parse.quote(file.name), data=file.read_bytes(), headers={**headers, 'Content-Type': 'application/octet-stream'}, method='POST')
     with urllib.request.urlopen(request, timeout=120) as response:
         asset = json.load(response)

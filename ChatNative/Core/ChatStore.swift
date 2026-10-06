@@ -16,6 +16,7 @@ final class ChatStore: ObservableObject {
     @Published var draft = ""
     @Published var attachments: [Attachment] = []
     @Published var apiKey: String
+    private let previewMode: Bool
     private var generation: Task<Void, Never>?
     private var generationToken: UUID?
     private var diskSave: Task<Void, Never>?
@@ -31,12 +32,14 @@ final class ChatStore: ObservableObject {
     var selectedIsStreaming: Bool { streamingID != nil && streamingID == selectedID }
     var canSend: Bool { !isStreaming && (!draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !attachments.isEmpty) }
 
-    init() {
-        let saved = UserDefaults.standard.data(forKey: "app-settings")
+    init(preview: Bool = false) {
+        previewMode = preview
+        let saved = preview ? nil : UserDefaults.standard.data(forKey: "app-settings")
         settings = saved.flatMap { try? JSONDecoder().decode(AppSettings.self, from: $0) } ?? AppSettings()
-        apiKey = Keychain.read()
+        apiKey = preview ? "" : Keychain.read()
         let directory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("ChatNative", isDirectory: true)
         stateURL = directory.appendingPathComponent("conversations.json")
+        if preview { return }
         do {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
             if FileManager.default.fileExists(atPath: stateURL.path) {
@@ -58,6 +61,7 @@ final class ChatStore: ObservableObject {
 
     @discardableResult
     func saveSettings() -> Bool {
+        if previewMode { return true }
         do {
             let data = try JSONEncoder().encode(settings)
             apiKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -68,7 +72,7 @@ final class ChatStore: ObservableObject {
     }
 
     func persist() {
-        guard storageWritable else { return }
+        guard storageWritable && !previewMode else { return }
         diskSave?.cancel()
         do {
             let data = try JSONEncoder().encode(StoredState(conversations: conversations, selectedID: selectedID))

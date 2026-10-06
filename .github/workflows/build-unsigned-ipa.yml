@@ -11,6 +11,7 @@ on:
       - 'Package.swift'
       - 'scripts/build_unsigned_ipa.sh'
       - 'scripts/publish_ipa.py'
+      - 'scripts/capture_ui_previews.py'
       - '.github/workflows/build-unsigned-ipa.yml'
 
 permissions:
@@ -22,36 +23,78 @@ concurrency:
 
 jobs:
   build:
+    name: iOS 26 · build, screenshots, IPA
     runs-on: macos-15
-    timeout-minutes: 25
+    timeout-minutes: 30
+    env:
+      REQUIRED_IOS_MAJOR: '26'
+      REQUIRED_SDK_MAJOR: '26'
     steps:
-      - name: Check out source
-        uses: actions/checkout@v4
-      - name: Show Xcode version
-        run: xcodebuild -version
+      - uses: actions/checkout@v4
+      - name: Select Xcode 26 SDK explicitly
+        run: |
+          test -d /Applications/Xcode_26.3.app
+          echo 'DEVELOPER_DIR=/Applications/Xcode_26.3.app/Contents/Developer' >> "$GITHUB_ENV"
+          /Applications/Xcode_26.3.app/Contents/Developer/usr/bin/xcodebuild -version
       - name: Test API core on Apple platform
         run: swift test
       - name: Build and package unsigned iPhone app
         run: bash scripts/build_unsigned_ipa.sh
+      - name: Capture real iOS 26 UI screenshots
+        run: python3 scripts/capture_ui_previews.py
       - name: Verify and publish direct IPA download
         env:
           GH_RELEASE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 scripts/publish_ipa.py
-      - name: Upload unsigned IPA
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: ChatNative-unsigned-IPA
-          path: |
-            artifacts/ChatNative-unsigned.ipa
-            artifacts/ChatNative-unsigned.ipa.sha256
-            artifacts/IPA-VERIFICATION.json
+          name: ChatNative-iOS26-IPA-and-previews
+          path: artifacts/
           if-no-files-found: error
           retention-days: 7
-      - name: Upload build log
-        if: always()
+      - name: Preserve build logs on failure
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: iOS-build-log
-          path: artifacts/xcodebuild.log
+          name: iOS26-build-logs
+          path: artifacts/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  validate-ios27:
+    name: iOS 27 preview · build and screenshots
+    runs-on: xcode-27
+    timeout-minutes: 30
+    env:
+      REQUIRED_IOS_MAJOR: '27'
+      REQUIRED_SDK_MAJOR: '27'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Xcode 27 preview SDK
+        run: |
+          xcodebuild -version
+          xcodebuild -showsdks
+      - name: Test API core on Apple platform
+        run: swift test
+      - name: Build iOS 27 compatibility app
+        run: bash scripts/build_unsigned_ipa.sh
+      - name: Capture real iOS 27 UI screenshots
+        run: python3 scripts/capture_ui_previews.py
+      - name: Attach iOS 27 verification and screenshots to release
+        env:
+          GH_RELEASE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/publish_ipa.py --preview-only
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ChatNative-iOS27-validation
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 7
+      - name: Preserve build logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: iOS27-build-logs
+          path: artifacts/
           if-no-files-found: ignore
           retention-days: 7

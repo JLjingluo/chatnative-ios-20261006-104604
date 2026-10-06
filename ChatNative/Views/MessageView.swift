@@ -23,17 +23,15 @@ struct MessageView: View {
                             }
                         }
                         if !message.text.isEmpty {
-                            Text(message.text).font(.system(size: 17)).lineSpacing(4).textSelection(.enabled)
+                            Text(message.text).font(.body).lineSpacing(4).textSelection(.enabled)
                                 .padding(.horizontal, 17).padding(.vertical, 12)
-                                .background(Palette.secondary, in: RoundedRectangle(cornerRadius: 23))
+                                .background(Palette.bubble, in: RoundedRectangle(cornerRadius: 22))
                         }
                     }
                 }
             } else {
                 if message.text.isEmpty {
-                    if streaming { TimelineView(.animation(minimumInterval: 0.5)) { context in
-                        Circle().fill(.primary).frame(width: 10, height: 10).opacity(Int(context.date.timeIntervalSince1970 * 2) % 2 == 0 ? 1 : 0.35)
-                    }.frame(height: 22).accessibilityLabel("正在生成回复") }
+                    if streaming { ChatGPTThinkingDots() }
                     else { Text(message.interrupted ? "生成已结束" : "暂无内容").font(.footnote).foregroundStyle(.secondary) }
                 } else { MarkdownView(source: message.text) }
                 if message.interrupted && !streaming && !message.text.isEmpty { Text("未完成的回复").font(.caption).foregroundStyle(.secondary) }
@@ -58,7 +56,7 @@ struct MessageView: View {
         }
     }
     private func action(_ symbol: String, _ label: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) { Image(systemName: symbol).font(.system(size: 16)).frame(minWidth: 26, minHeight: 32) }
+        Button(action: action) { Image(systemName: symbol).font(.system(size: 16)).frame(minWidth: 30, minHeight: 40) }
             .buttonStyle(.plain).foregroundStyle(.secondary).accessibilityLabel(label)
     }
     private func copy() {
@@ -107,24 +105,9 @@ struct MarkdownView: View {
         }.frame(maxWidth: .infinity, alignment: .leading)
     }
     private func prose(_ text: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            ForEach(Array(text.components(separatedBy: "\n").enumerated()), id: \.offset) { _, line in
-                if line.isEmpty { Color.clear.frame(height: 4) }
-                else if line.hasPrefix("### ") { inline(String(line.dropFirst(4))).font(.system(size: 18, weight: .semibold)).padding(.top, 5) }
-                else if line.hasPrefix("## ") { inline(String(line.dropFirst(3))).font(.system(size: 21, weight: .semibold)).padding(.top, 7) }
-                else if line.hasPrefix("# ") { inline(String(line.dropFirst(2))).font(.system(size: 25, weight: .semibold)).padding(.top, 7) }
-                else if line.hasPrefix("- ") || line.hasPrefix("* ") {
-                    HStack(alignment: .top, spacing: 10) { Text("•"); inline(String(line.dropFirst(2))) }.padding(.leading, 4)
-                } else if line.hasPrefix("> ") {
-                    HStack(alignment: .top, spacing: 12) { Rectangle().fill(Palette.tertiary).frame(width: 3); inline(String(line.dropFirst(2))).foregroundStyle(.secondary) }.fixedSize(horizontal: false, vertical: true)
-                } else if line == "---" { Divider().padding(.vertical, 5) }
-                else { inline(line) }
-            }
-        }.font(.system(size: 17)).lineSpacing(5).tint(.primary).textSelection(.enabled)
+        ReferenceMarkdownContent(text: text).font(.body).tint(.blue)
     }
-    private func inline(_ text: String) -> Text {
-        Text((try? AttributedString(markdown: text, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))) ?? AttributedString(text))
-    }
+
 }
 
 struct CodeBlockView: View {
@@ -144,8 +127,8 @@ struct CodeBlockView: View {
             }.padding(.horizontal, 14).padding(.vertical, 11)
             Divider()
             ScrollView(.horizontal) {
-                Text(code).font(.system(size: 13, design: .monospaced)).lineSpacing(5).textSelection(.enabled).padding(14).fixedSize(horizontal: true, vertical: false)
+                ReferenceHighlightedCode(code: code, language: language).padding(16).fixedSize(horizontal: true, vertical: false)
             }
-        }.background(Palette.secondary, in: RoundedRectangle(cornerRadius: 14)).clipShape(RoundedRectangle(cornerRadius: 14))
+        }.background(Palette.code, in: RoundedRectangle(cornerRadius: 16)).clipShape(RoundedRectangle(cornerRadius: 16)).environment(\.colorScheme, .dark)
     }
 }

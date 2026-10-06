@@ -19,6 +19,7 @@ xcodebuild \
   -sdk iphoneos \
   -destination 'generic/platform=iOS' \
   -derivedDataPath "$chatnative_build_dir/DerivedData" \
+  -clonedSourcePackagesDirPath "$chatnative_root/.ci-packages" \
   CODE_SIGNING_ALLOWED=NO \
   CODE_SIGNING_REQUIRED=NO \
   CODE_SIGN_IDENTITY='' \

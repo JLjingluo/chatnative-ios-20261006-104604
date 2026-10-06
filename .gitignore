@@ -8,3 +8,5 @@ xcuserdata/
 *.mobileprovision
 .env
 artifacts/
+.ci-packages/
+.ci-simulator/

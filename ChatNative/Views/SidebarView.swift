@@ -28,18 +28,18 @@ struct SidebarView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                BrandMark(size: 27).padding(.leading, 8)
+                Text("ChatGPT").font(.system(size: 20, weight: .semibold)).padding(.leading, 8)
                 Spacer()
-                IconButton(symbol: "square.and.pencil", label: "新对话") { store.newChat() }
-                IconButton(symbol: "sidebar.left", label: "关闭侧栏") { close() }
+                GlassIconButton(symbol: "square.and.pencil", label: "新对话") { store.newChat() }
+                GlassIconButton(symbol: "sidebar.left", label: "关闭侧栏") { close() }
             }.padding(.horizontal, 14).padding(.vertical, 8)
             HStack(spacing: 9) {
                 Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
                 TextField("搜索对话", text: $search).font(.system(size: 15)).focused($searchFocused)
                 if !search.isEmpty { Button { search = "" } label: { Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary) }.accessibilityLabel("清除搜索") }
-            }.padding(12).background(Palette.tertiary.opacity(0.6), in: RoundedRectangle(cornerRadius: 13)).padding(.horizontal, 18).padding(.bottom, 12)
+            }.padding(12).nativeGlass(radius: 22, interactive: true).padding(.horizontal, 18).padding(.bottom, 12)
             Button { store.newChat() } label: {
-                Label("新对话", systemImage: "plus").font(.system(size: 16, weight: .medium)).foregroundStyle(.primary).frame(maxWidth: .infinity, alignment: .leading).padding(14)
+                Label("新对话", systemImage: "square.and.pencil").font(.system(size: 16, weight: .medium)).foregroundStyle(.primary).frame(maxWidth: .infinity, alignment: .leading).padding(14)
             }.padding(.horizontal, 9)
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 18) {
@@ -73,13 +73,13 @@ struct SidebarView: View {
             Divider().padding(.horizontal, 18)
             Button { searchFocused = false; close(); store.settingsOpen = true } label: {
                 HStack(spacing: 12) {
-                    Text("你").font(.system(size: 14, weight: .semibold)).frame(width: 34, height: 34).background(Palette.tertiary, in: Circle())
+                    Text("你").font(.system(size: 14, weight: .semibold)).frame(width: 34, height: 34).nativeGlass(radius: 17)
                     VStack(alignment: .leading, spacing: 3) { Text("个人设置").font(.system(size: 15, weight: .medium)); Text("接口、模型与偏好").font(.system(size: 11)).foregroundStyle(.secondary) }
                     Spacer()
                     Image(systemName: "ellipsis").foregroundStyle(.secondary)
-                }.foregroundStyle(.primary).padding(.horizontal, 22).padding(.vertical, 18)
+                }.foregroundStyle(.primary).padding(.horizontal, 15).padding(.vertical, 13).nativeGlass(radius: 24).padding(.horizontal, 12).padding(.vertical, 12)
             }.buttonStyle(.plain)
-        }.background(Palette.secondary).accessibilityAddTraits(.isModal)
+        }.background(Palette.background).accessibilityAddTraits(.isModal)
             .alert("重命名对话", isPresented: Binding(get: { renameID != nil }, set: { if !$0 { renameID = nil } })) {
                 TextField("对话标题", text: $renameText)
                 Button("取消", role: .cancel) { renameID = nil }
