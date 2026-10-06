@@ -1,15 +1,15 @@
 # 生成未签名 IPA
 
-[直接下载 ChatNative-unsigned.ipa](https://github.com/JLjingluo/chatnative-ios-20261006-104604/releases/download/unsigned-2/ChatNative-unsigned.ipa)。无需登录，无需解压。文件已匿名下载并完成独立校验。
+[直接下载 ChatNative-unsigned.ipa](https://github.com/JLjingluo/chatnative-ios-20261006-104604/releases/download/unsigned-5/ChatNative-unsigned.ipa)。无需登录，无需解压。文件已匿名下载并完成独立校验。
 
-工程已经提供 GitHub Actions 的 macOS 构建流程和本地 Mac 构建脚本。**已于 2026-10-06 在 GitHub Actions macOS runner 上成功构建。** [下载 IPA 产物](https://github.com/JLjingluo/chatnative-ios-20261006-104604/actions/runs/37451975683/artifacts/11406444487)，解压得到 `ChatNative-unsigned.ipa`。现在也已发布单独的 Release IPA 文件，可使用文档顶部的直链。
+工程提供 GitHub Actions 的 macOS 构建流程和本地 Mac 构建脚本。发布产物是单独的 IPA 文件；无需解压外层 artifact ZIP。
 
 ## GitHub Actions
 
 1. 将本工程目录中的文件上传到自己的 GitHub 仓库根目录。根目录应直接包含 `ChatNative.xcodeproj`、`ChatNative/`、`scripts/` 和 `.github/`，不要只上传压缩包，也不要多套一层目录。
 2. 主分支为 `main` 或 `master` 时，提交应用代码或工作流会自动触发构建。也可在仓库 **Actions → Build unsigned iOS IPA → Run workflow** 手动运行。
-3. 流程在 `macos-15` runner 上运行核心测试，再使用 `xcodebuild` 编译 `iphoneos` 的 Release App。明确禁用代码签名，无需证书或 Apple 开发者账号。
-4. 构建成功后，在运行页的 **Artifacts** 下载 `ChatNative-unsigned-IPA`。GitHub 下载的是 artifact ZIP，解压后取得真正的 `ChatNative-unsigned.ipa` 和 SHA-256 文件。
+3. 流程在 `macos-15` runner 上明确选择 Xcode 26.3、运行核心测试，再使用 `xcodebuild` 编译 `iphoneos` 的 Release App。明确禁用代码签名，无需证书或 Apple 开发者账号。
+4. 同时在 iOS 26 模拟器运行应用并生成 9 张截图；额外的 `xcode-27` runner 验证 iOS 27 并生成对应截图。两项均通过后，Release 附件提供单独的 `ChatNative-unsigned.ipa`、SHA-256 和截图；点击 IPA 即可下载。
 5. 若构建失败，在日志或 `iOS-build-log` 下载产物中查看错误。Apple SDK 的首次构建已通过；未来若编译失败，不会上传一个假 IPA。
 
 仓库 Actions 必须启用。此仓库已公开，使用标准 GitHub-hosted macOS runner；公开仓库的标准 runner 通常无需支付分钟费用。

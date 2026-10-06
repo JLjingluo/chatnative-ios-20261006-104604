@@ -44,3 +44,7 @@ CI 明确选择 Xcode 26，而不是依赖 runner 默认的旧 Xcode。同时使
 每个平台以真实模拟器运行隔离的 Debug 样例，生成首页、聊天、代码、侧栏、模型、设置、语音、暗色和键盘状态共 9 张截图。样例代码仅存在于 DEBUG，不进入 Release IPA，也不读取或写入实际聊天/Keychain 数据。
 
 最终验收结果和真实截图链接必须以成功的构建为准。编译、截图生成和人工截图检查不能证明官方客户端像素级一致；目前用户未提供特定官方版本的完整截图。未验证的平台不会被标记为已经通过。
+
+## 本次实际结果
+
+[构建](https://github.com/JLjingluo/chatnative-ios-20261006-104604/actions/runs/37461378075)已成功；iOS 26 和 iOS 27 预览系统均完成真实模拟器启动及截图。[查看 18 张实际画面](UI_PREVIEWS.md)。公开直链的 IPA 来自稳定 Xcode 26.3 / iOS 26.2 SDK，iOS 27 的额外构建报告与截图单独附在同一 Release。键盘首次使用提示与尚未验收事项见 [VALIDATION.md](VALIDATION.md)。
